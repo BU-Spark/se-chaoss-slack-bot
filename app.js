@@ -4,14 +4,12 @@ const theActions = require('./components/actions/actionResponses');
 const mentorshipAction = require('./components/actions/mentorshipAction');
 const mentorshipResponses = require('./components/actions/mentorshipResponses');
 const outreachyPrompt = require('./components/outreachyPrompt');
-
 const joinChaossAfrica = require('./components/chaossAfrica/joinChaossAfrica');
 const chaossAfrica = require('./components/chaossAfrica/africa');
-
 const joinTeam = require('./components/joinTeam');
 const memberJoinChannel = require('./components/joinChannel');
 const dotenv = require('dotenv');
-
+const axios = require('axios').default;
 
 dotenv.config();
 
@@ -247,7 +245,6 @@ async function talksWithThem(channel, user, message) {
   }
 }
 
-const axios = require('axios');
 
 let flaggedWord; // Global variable to store the flagged words
 
@@ -338,10 +335,6 @@ app.action(/^definition_next_/, async ({ ack, body, channel, context, action }) 
     });
   }
 });
-
-
-
-
 
 
 let alex;
