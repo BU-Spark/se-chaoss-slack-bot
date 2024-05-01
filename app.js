@@ -398,41 +398,6 @@ function removeBadWord(word) {
   return originalLength !== badWords.length; // Returns true if something was removed
 }
 
-// app.message(async ({ message, client, say }) => {
-//   try {
-//       const result = await client.users.info({ user: message.user });
-//       const user = result.user;
-//       const text = message.text.trim();
-//       const addCommand = text.match(/^!addword\s+(\S+)\s+(.+)$/i);
-//       const removeCommand = text.match(/^!removeword\s+(\S+)$/i);
-//       if ((user.is_admin) && (addCommand || removeCommand)) {
-
-//           if (addCommand) {
-//               const [, word, reason] = addCommand;
-//               addBadWord(word, reason);
-//               await say(`Added "${word}" to the bad words list with reason: ${reason}`);
-//           } else if (removeCommand) {
-//               const [, word] = removeCommand;
-//               const removed = removeBadWord(word);
-//               if (removed) {
-//                   await say(`Removed "${word}" from the bad words list.`);
-//               } else {
-//                   await say(`Could not find "${word}" in the bad words list.`);
-//               }
-//           } else {
-//               //await say("Invalid command or format. Please use `!addword word reason` or `!removeword word`.");
-//           }
-//       } else {
-//           //await say("You do not have the necessary permissions to perform this action.");
-//       }
-//   } catch (error) {
-//       console.error("Failed to retrieve user info or process command:", error);
-//       await say("An error occurred while processing your command.");
-//   }
-// });
-
-
-
 
 function saveBadWords() {
   try {
@@ -443,8 +408,6 @@ function saveBadWords() {
       console.error("Error saving bad words to file:", err);
   }
 }
-
-
 
 
 function findBadWords(message) {
@@ -460,11 +423,6 @@ function findBadWords(message) {
 
 loadAlex().then(() => {
   loadBadWords()
-  // setTimeout(() => {
-  // //  addBadWord("kim", "kim is weird")
-  // //addBadWord("arya", "arya is arya")
-  //   removeBadWord("arya")
-  // }, 500);
   app.message(async ({ message, client, say }) => {
     if (!message.text && !message.file) {
       return; 
