@@ -162,6 +162,7 @@ function saveUsers(usersArray) {
   console.log('⚡️ Bolt app is running!');
 })();
 
+
 async function deleteMessage(channel, ts) {
   try {
       const result = await app.client.chat.delete({
