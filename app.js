@@ -170,8 +170,7 @@ async function deleteMessage(channel, ts) {
           ts: ts,
           token: process.env.DELETE_TOKEN, // Use the admin (user) token for this operation
       });
-      //console.log(result);
-      console.log("!! im delete bad msg !!");
+      //console.log("!! im delete bad msg !!");
   } catch (error) {
       console.error(error);
       if (error.data && error.data.error === 'cant_delete_message') {
@@ -192,7 +191,6 @@ async function talksWithThemPrivate(userId, message) {
       channel: userId,
       text: message,
     });
-    //console.log(result);
   } catch (error) {
     console.error(error);
   }
@@ -226,7 +224,7 @@ async function talksWithThemButton(channel, user, message, flaggedWord) {
         },
       ],
     });
-    console.log("Ephemeral message sent:", result);
+    //console.log("Ephemeral message sent:", result);
   } catch (error) {
     console.error("Failed to send ephemeral message:", error);
   }
@@ -240,7 +238,7 @@ async function talksWithThem(channel, user, message) {
       text: message,
       token: process.env.SLACK_BOT_TOKEN,
     });
-    console.log("Ephemeral message sent:", result);
+    //console.log("Ephemeral message sent:", result);
   } catch (error) {
     console.error("Failed to send ephemeral message:", error);
   }
@@ -367,7 +365,7 @@ function loadBadWords() {
         }
         try {
             badWords = JSON.parse(data);
-            console.log("Bad words loaded:", badWords);
+            //console.log("Bad words loaded:", badWords);
         } catch (parseError) {
             console.error("Error parsing JSON from file:", parseError);
             createBlankJson(); // Reset file with blank JSON if parsing fails
@@ -381,7 +379,7 @@ function createBlankJson() {
             console.error("Error writing blank JSON file:", err);
             return;
         }
-        console.log("Blank JSON file created successfully.");
+        //console.log("Blank JSON file created successfully.");
         badWords = [];
     });
 }
@@ -403,7 +401,7 @@ function saveBadWords() {
   try {
       // Write the JSON synchronously to the file
       fs.writeFileSync(FILE_PATH, JSON.stringify(badWords, null, 2), 'utf8');
-      console.log("Bad words updated successfully.");
+      //console.log("Bad words updated successfully.");
   } catch (err) {
       console.error("Error saving bad words to file:", err);
   }
@@ -458,7 +456,7 @@ loadAlex().then(() => {
       const alexCheck = alex.text(lowerText).messages;
       const alexChecker = [...alexCheck]; // original check
       let newFinder = findBadWords(text.toLowerCase())
-      console.log(newFinder)
+      //console.log(newFinder)
       if (newFinder.length > 0){
         newFinder.forEach(wordy => {
           alexCheck.push({
