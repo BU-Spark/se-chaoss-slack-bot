@@ -4,14 +4,12 @@ const theActions = require('./components/actions/actionResponses');
 const mentorshipAction = require('./components/actions/mentorshipAction');
 const mentorshipResponses = require('./components/actions/mentorshipResponses');
 const outreachyPrompt = require('./components/outreachyPrompt');
-
 const joinChaossAfrica = require('./components/chaossAfrica/joinChaossAfrica');
 const chaossAfrica = require('./components/chaossAfrica/africa');
-
 const joinTeam = require('./components/joinTeam');
 const memberJoinChannel = require('./components/joinChannel');
 const dotenv = require('dotenv');
-
+const axios = require('axios').default;
 
 dotenv.config();
 
@@ -164,6 +162,7 @@ function saveUsers(usersArray) {
   console.log('⚡️ Bolt app is running!');
 })();
 
+
 async function deleteMessage(channel, ts) {
   try {
       const result = await app.client.chat.delete({
@@ -187,7 +186,7 @@ async function deleteMessage(channel, ts) {
   }
 }
 
-async function talksWithHimPrivate(userId, message) {
+async function talkswiththemprivate(userId, message) {
   try {
     const result = await app.client.chat.postMessage({
       channel: userId,
@@ -201,7 +200,7 @@ async function talksWithHimPrivate(userId, message) {
 
 
 //bot sends message to the user directly if they are flagged
-async function talksWithHimButton(channel, user, message, flaggedWord) {
+async function talkswiththemButton(channel, user, message, flaggedWord) {
   try {
     const result = await app.client.chat.postEphemeral({
       channel: channel,
@@ -233,7 +232,7 @@ async function talksWithHimButton(channel, user, message, flaggedWord) {
   }
 }
 
-async function talksWithHim(channel, user, message) {
+async function talkswiththem(channel, user, message) {
   try {
     const result = await app.client.chat.postEphemeral({
       channel: channel,
@@ -247,7 +246,7 @@ async function talksWithHim(channel, user, message) {
   }
 }
 
-const axios = require('axios');
+
 
 let flaggedWord; // Global variable to store the flagged words
 
@@ -258,16 +257,13 @@ app.action('learn_more', async ({ ack, user, channel, body, context }) => {
   // Acknowledge the action
   await ack();
 
-  // Create an array of promises
-  const promises = flaggedWord.map(async word => {
-    try {
-      const response = await axios.get(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
-      return { word, definitions: response.data[0].meanings.map(meaning => meaning.definitions[0].definition) };
-    } catch (error) {
-      console.error(`Failed to fetch definition for ${word}:`, error);
-      return { word, error: error.message };
-    }
-  });
+  // Create an array of promises using getWrapper function to get definitions
+  const promises = flaggedWord.map(word => getWrapper(word).then(definitions => {
+    return { word, definitions };
+  }).catch(error => {
+    console.error(`Failed to fetch definition for ${word}:`, error);
+    return { word, error: error.message };
+  }));
 
   // Wait for all promises to resolve
   const results = await Promise.all(promises);
@@ -279,29 +275,39 @@ app.action('learn_more', async ({ ack, user, channel, body, context }) => {
 
   // send the first definition and a button to request an alt definition for each word using the button
   results.forEach(async (result, i) => {
-    await app.client.chat.postEphemeral({
-      channel: body.channel.id,
-      user: body.user.id,
-      text: `*Definition 1 for ${result.word}*: ${result.definitions[0]}`,
-      blocks: [{
-        "type": "section",
-        "text": {
-          "type": "mrkdwn",
-          "text": `*Definition 1 for ${result.word}*: ${result.definitions[0]}`
-        },
-        "accessory": {
-          "type": "button",
+    if (result.definitions && result.definitions.length > 0) {
+      await app.client.chat.postEphemeral({
+        channel: body.channel.id,
+        user: body.user.id,
+        text: `*Definition 1 for ${result.word}*: ${result.definitions[0]}`,
+        blocks: [{
+          "type": "section",
           "text": {
-            "type": "plain_text",
-            "text": "Show another definition"
+            "type": "mrkdwn",
+            "text": `*Definition 1 for ${result.word}*: ${result.definitions[0]}`
           },
-          "action_id": `definition_next_${result.word}`
-        }
-      }],
-      token: context.botToken,
-    });
+          "accessory": {
+            "type": "button",
+            "text": {
+              "type": "plain_text",
+              "text": "Show another definition"
+            },
+            "action_id": `definition_next_${result.word}`
+          }
+        }],
+        token: context.botToken,
+      });
+    } else {
+      await app.client.chat.postEphemeral({
+        channel: body.channel.id,
+        user: body.user.id,
+        text: `*No definition found for ${result.word}*`,
+        token: context.botToken,
+      });
+    }
   });
 });
+
 
 // handles the second button click
 app.action(/^definition_next_/, async ({ ack, body, channel, context, action }) => {
@@ -398,42 +404,6 @@ function removeBadWord(word) {
   return originalLength !== badWords.length; // Returns true if something was removed
 }
 
-// app.message(async ({ message, client, say }) => {
-//   try {
-//       const result = await client.users.info({ user: message.user });
-//       const user = result.user;
-//       const text = message.text.trim();
-//       const addCommand = text.match(/^!addword\s+(\S+)\s+(.+)$/i);
-//       const removeCommand = text.match(/^!removeword\s+(\S+)$/i);
-//       if ((user.is_admin) && (addCommand || removeCommand)) {
-
-//           if (addCommand) {
-//               const [, word, reason] = addCommand;
-//               addBadWord(word, reason);
-//               await say(`Added "${word}" to the bad words list with reason: ${reason}`);
-//           } else if (removeCommand) {
-//               const [, word] = removeCommand;
-//               const removed = removeBadWord(word);
-//               if (removed) {
-//                   await say(`Removed "${word}" from the bad words list.`);
-//               } else {
-//                   await say(`Could not find "${word}" in the bad words list.`);
-//               }
-//           } else {
-//               //await say("Invalid command or format. Please use `!addword word reason` or `!removeword word`.");
-//           }
-//       } else {
-//           //await say("You do not have the necessary permissions to perform this action.");
-//       }
-//   } catch (error) {
-//       console.error("Failed to retrieve user info or process command:", error);
-//       await say("An error occurred while processing your command.");
-//   }
-// });
-
-
-
-
 function saveBadWords() {
   try {
       // Write the JSON synchronously to the file
@@ -443,9 +413,6 @@ function saveBadWords() {
       console.error("Error saving bad words to file:", err);
   }
 }
-
-
-
 
 function findBadWords(message) {
   const regex = new RegExp(`\\b(${badWords.map(bw => bw.word).join('|')})\\b`, 'ig');
@@ -517,7 +484,7 @@ loadAlex().then(() => {
         
         // warn user that their message contains bad words
         setTimeout(async () => {
-          talksWithHimButton(message.channel, user, `Hey there! Your message "${text}" has been flagged. ${reason}. We're all about promoting respect and inclusivity here! Could you please take a moment to revise it? We will give you 1 minute to edit your message before it deletes. To do so, hover over your message, click the three dots, then click edit message.`);
+          talkswiththemButton(message.channel, user, `Hey there! Your message "${text}" has been flagged. ${reason}. We're all about promoting respect and inclusivity here! Could you please take a moment to revise it? We will give you 1 minute to edit your message before it deletes. To do so, hover over your message, click the three dots, then click edit message.`);
         }, 1000);
 
         // wait 1 minute before checking the message again
@@ -534,20 +501,20 @@ loadAlex().then(() => {
             const currentMessage = history.messages[0];
             if (attempts >= 3) { // a set limit for editing the message to prevent infinite loops 
               deleteMessage(channel, originalTimestamp);
-              talksWithHim(channel, user, "You didn't edit the message after several warnings. The message has been deleted.");
+              talkswiththem(channel, user, "You didn't edit the message after several warnings. The message has been deleted.");
             } else if (currentMessage.text !== text) { // your original message has been edited 
               checkMessage(user, channel, currentMessage.text, originalTimestamp, attempts + 1); // check the message again for insensitive words
             } else { //message was flagged but not edited, so now it will be deleted
                 deleteMessage(message.channel, message.ts);
-                talksWithHim(message.channel, user, "Uh oh! Just a heads up, we've removed your message because it included insensitive language. No worries though! We've sent a copy of your message to your private DM with DEI Bot. When you have a moment, please edit it your message and retry sending it.");
-                talksWithHimPrivate(user, `Copy of your deleted message: ${text}`)
+                talkswiththem(message.channel, user, "Uh oh! Just a heads up, we've removed your message because it included insensitive language. No worries though! We've sent a copy of your message to your private DM with DEI Bot. When you have a moment, please edit it your message and retry sending it.");
+                talkswiththemprivate(user, `Copy of your deleted message: ${text}`)
             }
           } catch (error) {
             console.error("Error checking for message edit:", error);
           }
         }, 60000); // 1 minute wait
       } else if (attempts > 1) { // if the message has been edited and is now fine after finding insensitive words
-        talksWithHim(channel, user, "Thank you for updating your message!");
+        talkswiththem(channel, user, "Thank you for updating your message!");
       } 
     };
 
@@ -575,6 +542,50 @@ app.message(/^!help$/i, async ({ message, client, say }) => {
     //await say("Sorry, you do not have the permissions to access this command.");
   }
 });
+
+
+function getDictionaryEntry(word) {
+    return new Promise((resolve, reject) => {
+        if (!word) {
+            reject(new Error("No word provided"));
+            return;
+        }
+
+        const firstLetter = word.charAt(0).toLowerCase();
+        const filePath = path.join(__dirname, 'dict', `${firstLetter}.json`);
+
+        fs.readFile(filePath, { encoding: 'utf8' }, (err, data) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+
+            try {
+                const dict = JSON.parse(data);
+                const entry = dict[word];
+                if (entry) {
+                    resolve(entry);
+                } else {
+                    reject(new Error(`No entry found for word: ${word}`));
+                }
+            } catch (parseError) {
+                reject(parseError);
+            }
+        });
+    });
+}
+
+function getWrapper(word) {
+  return new Promise((resolve, reject) => {
+    getDictionaryEntry(word).then(entry => {
+      const mappedDef = entry.meanings.map(meaning => meaning.def);
+      resolve(mappedDef);  // Resolve the promise with the definitions
+    }).catch(error => {
+      console.error(error);
+      resolve(["Sorry, the definition was not loaded."]);  // Resolve with a default message
+    });
+  });
+}
 
 
 
