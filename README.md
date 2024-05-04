@@ -20,6 +20,26 @@ For more information about this project, read the [CHAOSS Slack Bot Docs](https:
 - When a user presses the "Learn more" button, they will privately be provided with a definition of the word(s) that was flagged
 - When a definition is sent to the user, a "Show another definition" button is displayed
 - When the "Show another definition" button is pressed, an alternative definiton is displayed until it runs out of definitions
+- Administrators can manage a custom list of blocked words, but all standard offensive/non-inclusive terms are already blocked
+
+## Technical Overview
+- The bot itself is written in JavaScript, particularly using the Bolt framework to implement the Slack API
+- Words are parsed using the [alex](https://github.com/get-alex/alex) library, which implements the [retext](https://github.com/retextjs/retext) NLP engine.
+- To accomodate for additional flagged words, the filesystem module is used to create a custom JSON which stores the words and definitions of these words.
+- The ephemeral message provides definitions loaded from the provided dictionary in the repo, which is a copy of the [Wordset dictionary](https://github.com/wordset/wordset-dictionary/tree/master).
+
+## Running the bot
+- To run the bot, it is first advised to install all applicable npm packages.
+- Afterwards, environment variables must be set. The bot requires a slack bot token, signing secret, and app token, to all be set with the following names: SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET, SLACK_APP_TOKEN
+- Additionally, the bot requires a Slack user token of an administrator to be supplied as the DELETE_TOKEN. This is imperative to the bots function, as without the user token, moderation can not occur.
+- Ensure that proper permissions are given to app.js, as it will need to read and write to custom.json in the root directory.
+- After all these steps are followed, simply run "node app.js" to run the bot.
+
+## Currently Known Issues
+- At the moment, the bot does not have any issues, bugs, or errors. However, please open a GitHub issue to track any issues that are found.
+
+## Deployment
+- The deployment of this bot does not require any particularly specific instructions. You can follow the section titled **Running the bot** as an alternative. These instructions apply to any deployment services or other hosted application services. As long as the environment variables are set and the file system permissions are correct, alongside the applicable node modules being installed, the bot will deploy properly.
 
 ## Getting Started
 If you're interested in cloning our bot for your Slack workspace, you can follow the steps in the [CONTRIBUTING.md](https://github.com/chaoss/chaoss-slack-bot/blob/main/CONTRIBUTING.md) to setup, and [https://slack.dev/bolt-js/deployments/heroku](https://slack.dev/bolt-js/deployments/heroku) or [https://slack.dev/bolt-js/deployments/aws-lambda](https://slack.dev/bolt-js/deployments/aws-lambda) to deploy.
