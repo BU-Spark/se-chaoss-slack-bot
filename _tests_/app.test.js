@@ -89,8 +89,14 @@ describe('test', () => {
     expect(app.message).toBeCalledWith(/outreachy/i, expect.any(Function));
   });
 
+// test cases for DEI bot version
+  it('test the !help prompt', async () => {
+    await app.start();
+    expect(app.message).toBeCalledWith(/^!help$/i, expect.any(Function));
+  });
+
   // it('test the general DM method', async () => {
-  //   await app.start();
+  //   await app.start();s
   //   expect(app.message).toBeCalledWith('intro-CHAOSS', expect.any(Function));
   // });
 });

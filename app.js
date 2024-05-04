@@ -186,7 +186,7 @@ async function deleteMessage(channel, ts) {
   }
 }
 
-async function talkswiththemprivate(userId, message) {
+async function talksWithThemPrivate(userId, message) {
   try {
     const result = await app.client.chat.postMessage({
       channel: userId,
@@ -200,7 +200,7 @@ async function talkswiththemprivate(userId, message) {
 
 
 //bot sends message to the user directly if they are flagged
-async function talkswiththemButton(channel, user, message, flaggedWord) {
+async function talksWithThemButton(channel, user, message, flaggedWord) {
   try {
     const result = await app.client.chat.postEphemeral({
       channel: channel,
@@ -232,7 +232,7 @@ async function talkswiththemButton(channel, user, message, flaggedWord) {
   }
 }
 
-async function talkswiththem(channel, user, message) {
+async function talksWithThem(channel, user, message) {
   try {
     const result = await app.client.chat.postEphemeral({
       channel: channel,
@@ -245,7 +245,6 @@ async function talkswiththem(channel, user, message) {
     console.error("Failed to send ephemeral message:", error);
   }
 }
-
 
 
 let flaggedWord; // Global variable to store the flagged words
@@ -346,10 +345,6 @@ app.action(/^definition_next_/, async ({ ack, body, channel, context, action }) 
 });
 
 
-
-
-
-
 let alex;
 
 async function loadAlex() {
@@ -427,11 +422,6 @@ function findBadWords(message) {
 
 loadAlex().then(() => {
   loadBadWords()
-  // setTimeout(() => {
-  // //  addBadWord("kim", "kim is weird")
-  // //addBadWord("arya", "arya is arya")
-  //   removeBadWord("arya")
-  // }, 500);
   app.message(async ({ message, client, say }) => {
     if (!message.text && !message.file) {
       return; 
@@ -484,7 +474,7 @@ loadAlex().then(() => {
         
         // warn user that their message contains bad words
         setTimeout(async () => {
-          talkswiththemButton(message.channel, user, `Hey there! Your message "${text}" has been flagged. ${reason}. We're all about promoting respect and inclusivity here! Could you please take a moment to revise it? We will give you 1 minute to edit your message before it deletes. To do so, hover over your message, click the three dots, then click edit message.`);
+          talksWithThemButton(message.channel, user, `Hey there! Your message "${text}" has been flagged. ${reason}. We're all about promoting respect and inclusivity here! Could you please take a moment to revise it? We will give you 1 minute to edit your message before it deletes. To do so, hover over your message, click the three dots, then click edit message.`);
         }, 1000);
 
         // wait 1 minute before checking the message again
@@ -501,20 +491,20 @@ loadAlex().then(() => {
             const currentMessage = history.messages[0];
             if (attempts >= 3) { // a set limit for editing the message to prevent infinite loops 
               deleteMessage(channel, originalTimestamp);
-              talkswiththem(channel, user, "You didn't edit the message after several warnings. The message has been deleted.");
+              talksWithThem(channel, user, "You didn't edit the message after several warnings. The message has been deleted.");
             } else if (currentMessage.text !== text) { // your original message has been edited 
               checkMessage(user, channel, currentMessage.text, originalTimestamp, attempts + 1); // check the message again for insensitive words
             } else { //message was flagged but not edited, so now it will be deleted
                 deleteMessage(message.channel, message.ts);
-                talkswiththem(message.channel, user, "Uh oh! Just a heads up, we've removed your message because it included insensitive language. No worries though! We've sent a copy of your message to your private DM with DEI Bot. When you have a moment, please edit it your message and retry sending it.");
-                talkswiththemprivate(user, `Copy of your deleted message: ${text}`)
+                talksWithThem(message.channel, user, "Uh oh! Just a heads up, we've removed your message because it included insensitive language. No worries though! We've sent a copy of your message to your private DM with DEI Bot. When you have a moment, please edit it your message and retry sending it.");
+                talksWithThemPrivate(user, `Copy of your deleted message: ${text}`)
             }
           } catch (error) {
             console.error("Error checking for message edit:", error);
           }
-        }, 60000); // 1 minute wait
+        }, 10000); // 1 minute wait
       } else if (attempts > 1) { // if the message has been edited and is now fine after finding insensitive words
-        talkswiththem(channel, user, "Thank you for updating your message!");
+        talksWithThem(channel, user, "Thank you for updating your message!");
       } 
     };
 
