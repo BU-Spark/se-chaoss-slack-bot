@@ -417,6 +417,10 @@ function findBadWords(message) {
   return [];
 }
 
+const getBadWordsDescriptions = () => {
+  return badWords.map(bw => `${bw.word} - ${bw.reason}`).join('\n');
+};
+
 
 loadAlex().then(() => {
   loadBadWords()
@@ -430,12 +434,16 @@ loadAlex().then(() => {
       const text = message.text.trim();
       const addCommand = text.match(/^!addword\s+(\S+)\s+(.+)$/i);
       const removeCommand = text.match(/^!removeword\s+(\S+)$/i);
-    if ((user.is_admin) && (addCommand || removeCommand)) {
+      const addDefinitionCommand = text.match(/^!adddefinition\s+(\S+)\s+(.+)$/i);
+      const editDefinitionCommand = text.match(/^!editdefinition\s+(\S+)\s+(.+)$/i);
+      const removeFromDictCommand = text.match(/^!removefromdict\s+(\S+)$/i);
+
+    if ((user.is_admin) && (addCommand || removeCommand || addDefinitionCommand || editDefinitionCommand || removeFromDictCommand)) {
 
           if (addCommand) {
               const [, word, reason] = addCommand;
               addBadWord(word, reason);
-              await say(`Added "${word}" to the bad words list with reason: ${reason}`);
+              await say(`Added "${word}" to the bad words list with reason: ${reason}. Please use !adddefinition to add a definition for this offensive word as well.`);
           } else if (removeCommand) {
               const [, word] = removeCommand;
               const removed = removeBadWord(word);
@@ -444,7 +452,26 @@ loadAlex().then(() => {
               } else {
                   await say(`Could not find "${word}" in the bad words list.`);
               }
-          } else {
+          }
+          else if (addDefinitionCommand){
+            const [, word, def] = addDefinitionCommand;
+            addWord(word, def)
+            await say("added word to definition list")
+          } 
+          else if (editDefinitionCommand){
+            const [, word, def] = editDefinitionCommand;
+            editWord(word, def)
+            await say("edited word to definition list")
+
+          } 
+          else if (removeFromDictCommand){
+            const [, word] = removeFromDictCommand;
+            deleteWord(word)
+            await say("removed word to definition list")
+
+
+          } 
+          else {
               //await say("Invalid command or format. Please use `!addword word reason` or `!removeword word`.");
           }
       } else {
@@ -468,7 +495,7 @@ loadAlex().then(() => {
 
       if (alexCheck.length > 0) { //insensitive words were found
         const reason = alexCheck.map(word => word.reason).join(", and ");
-        flaggedWord = alexChecker.map(word => word.actual); // bypass flagger due to custom word
+        flaggedWord = alexCheck.map(word => word.actual); // unbypas cuz new stuff
         
         // warn user that their message contains bad words
         setTimeout(async () => {
@@ -500,7 +527,7 @@ loadAlex().then(() => {
           } catch (error) {
             console.error("Error checking for message edit:", error);
           }
-        }, 10000); // 1 minute wait
+        }, 60000); // 1 minute wait (!!!!)
       } else if (attempts > 1) { // if the message has been edited and is now fine after finding insensitive words
         talksWithThem(channel, user, "Thank you for updating your message!");
       } 
@@ -516,7 +543,12 @@ const helpText = `
 
 *!addword <word> <reason>* - Adds a word to the bad words list with a specific reason. Usage: \`!addword example "This is a bad word because..."\`
 *!removeword <word>* - Removes a word from the bad words list. Usage: \`!removeword example\`
+*!adddefinition <word> <definition>* - Adds a definition to a word in the dictionary. Usage: \`!adddefinition conjecture "A conclusion deduced by surmise or guesswork."\`
+*!editdefinition <word> <newDefinition>* - Updates an existing definition of a word in the dictionary. Usage: \`!editdefinition conjecture "An inference or conclusion drawn or deduced by surmise or guesswork."\`
+*!removefromdict <word>* - Removes a word and its definitions from the dictionary. Usage: \`!removefromdict conjecture\`
+*!badwords* - Prints all custom badwords and their reason for blockage
 `;
+
 
 app.message(/^!help$/i, async ({ message, client, say }) => {
   const userInfo = await client.users.info({ user: message.user });
@@ -525,6 +557,19 @@ app.message(/^!help$/i, async ({ message, client, say }) => {
     await say({
       channel: message.channel,
       text: helpText
+    });
+  } else {
+    //await say("Sorry, you do not have the permissions to access this command.");
+  }
+});
+
+app.message(/^!badwords$/i, async ({ message, client, say }) => {
+  const userInfo = await client.users.info({ user: message.user });
+
+  if (userInfo.user.is_admin) { // Ensure that the user is an admin
+    await say({
+      channel: message.channel,
+      text: "Here are the bad words: \n\n"+getBadWordsDescriptions()
     });
   } else {
     //await say("Sorry, you do not have the permissions to access this command.");
@@ -575,5 +620,55 @@ function getWrapper(word) {
   });
 }
 
+// Helper function to load the dictionary
+const loadDictionary = (word) => {
+  const filePath = path.join('./dict', `${word[0].toLowerCase()}.json`);
+  try {
+      const data = fs.readFileSync(filePath, 'utf8');
+      return [JSON.parse(data), filePath];
+  } catch (error) {
+      console.error('Error reading the file:', error);
+      return [{}];
+  }
+};
+
+// Helper function to save the dictionary
+const saveDictionary = (filePath, dict) => {
+  try {
+      const data = JSON.stringify(dict, null, 2);
+      fs.writeFileSync(filePath, data, 'utf8');
+  } catch (error) {
+      console.error('Error writing to the file:', error);
+  }
+};
+
+// Add a word to the dictionary
+const addWord = (word, definition) => {
+  const [dict, filePath] = loadDictionary(word);
+  dict[word] = { "meanings": [{ "def": definition }] };
+  saveDictionary(filePath, dict);
+};
+
+// Delete a word from the dictionary
+const deleteWord = (word) => {
+  const [dict, filePath] = loadDictionary(word);
+  if (dict[word]) {
+      delete dict[word];
+      saveDictionary(filePath, dict);
+  } else {
+      console.log("Word not found!");
+  }
+};
+
+// Edit a word's definition in the dictionary
+const editWord = (word, newDefinition) => {
+  const [dict, filePath] = loadDictionary(word);
+  if (dict[word]) {
+      dict[word].meanings[0].def = newDefinition;
+      saveDictionary(filePath, dict);
+  } else {
+      console.log("Word not found to edit!");
+  }
+};
 
 
