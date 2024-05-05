@@ -174,11 +174,7 @@ async function deleteMessage(channel, ts) {
   } catch (error) {
       console.error(error);
       if (error.data && error.data.error === 'cant_delete_message') {
-          console.log('!! im dont perm for delete !!')
-          console.log('!! pls make sure im DELETE_TOKEN correctly !!')
-          console.log('!! user token should be workspace admin !!')
-          console.log('!! user token should not be bot token !!')
-          console.log('!! im dont perm for delete !!')
+          console.log('!! Please make sure the DELETE_TOKEN is correct !!')
       } else {
           console.log("delete err generic.");
       }
@@ -672,3 +668,7 @@ const editWord = (word, newDefinition) => {
 };
 
 
+exports.addBadWord = addBadWord;
+exports.loadAlex = loadAlex;
+exports.loadBadWords = loadBadWords;
+exports.saveBadWords = saveBadWords;
