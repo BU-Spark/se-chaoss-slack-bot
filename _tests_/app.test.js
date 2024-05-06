@@ -102,6 +102,22 @@ describe('test', () => {
     expect(app.message).toBeCalledWith(/^!badwords$/i, expect.any(Function));
   });
   
+  it('test the "Why?" button click', async () => {
+    await app.start();
+    expect(app.action).toBeCalledWith(
+      'learn_more',
+      expect.any(Function)
+    );
+  });
+
+  it('test the 2nd "Why?" button click', async () => {
+    await app.start();
+    expect(app.action).toBeCalledWith(
+      /^definition_next_/,
+      expect.any(Function)
+    );
+  });
+
 
   // it('test the general DM method', async () => {
   //   await app.start();

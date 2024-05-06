@@ -181,6 +181,7 @@ async function deleteMessage(channel, ts) {
   }
 }
 
+// Privately DM's the user
 async function talksWithThemPrivate(userId, message) {
   try {
     const result = await app.client.chat.postMessage({
@@ -193,7 +194,7 @@ async function talksWithThemPrivate(userId, message) {
 }
 
 
-//bot sends message to the user directly if they are flagged
+// button to learn more
 async function talksWithThemButton(channel, user, message, flaggedWord) {
   try {
     const result = await app.client.chat.postEphemeral({
@@ -226,6 +227,7 @@ async function talksWithThemButton(channel, user, message, flaggedWord) {
   }
 }
 
+// function to privately message a user
 async function talksWithThem(channel, user, message) {
   try {
     const result = await app.client.chat.postEphemeral({
@@ -246,6 +248,7 @@ let flaggedWord; // Global variable to store the flagged words
 // Use a Map as a simple server-side cache
 const definitionsCache = new Map();
 
+// Handle the "Why?" button click
 app.action('learn_more', async ({ ack, user, channel, body, context }) => {
   // Acknowledge the action
   await ack();
@@ -338,7 +341,7 @@ app.action(/^definition_next_/, async ({ ack, body, channel, context, action }) 
   }
 });
 
-
+// Load Alex.js dictionary, which contains a list of insensitive words
 let alex;
 
 async function loadAlex() {
@@ -351,7 +354,6 @@ const path = require('path');
 const FILE_PATH = path.join(__dirname, 'custom.json');
 
 let badWords = [];
-
 function loadBadWords() {
     fs.readFile(FILE_PATH, 'utf8', (err, data) => {
         if (err) {
@@ -380,7 +382,7 @@ function createBlankJson() {
     });
 }
 
-
+// Features to customize the words that should be flagged
 function addBadWord(word, reason) {
   badWords.push({ word, reason });
   saveBadWords();
@@ -408,7 +410,7 @@ function findBadWords(message) {
   const matches = message.match(regex);
   if (matches) {
     const matchedWords = [...new Set(matches.map(word => word.toLowerCase()))];
-    return badWords.filter(bw => matchedWords.includes(bw.word.toLowerCase()));
+    return badWords.filter(bw => matchedWords.includes(bw.word.toLowerCase()))
   }
   return [];
 }
@@ -417,7 +419,7 @@ const getBadWordsDescriptions = () => {
   return badWords.map(bw => `${bw.word} - ${bw.reason}`).join('\n');
 };
 
-
+// Functionality for customizing the dictionary for the "Why?" button
 loadAlex().then(() => {
   loadBadWords()
   app.message(async ({ message, client, say }) => {
@@ -473,7 +475,7 @@ loadAlex().then(() => {
       } else {
           //await say("You do not have the necessary permissions to perform this action.");
       
-    
+    // Function to check for insensitive words in messages
     const checkMessage = async (user, channel, text, originalTimestamp, attempts = 1) => {
       const lowerText = text.toLowerCase(); 
       const alexCheck = alex.text(lowerText).messages;
@@ -493,12 +495,12 @@ loadAlex().then(() => {
         const reason = alexCheck.map(word => word.reason).join(", and ");
         flaggedWord = alexCheck.map(word => word.actual); // unbypas cuz new stuff
         
-        // warn user that their message contains bad words
+        // Warn user that their message contains bad words
         setTimeout(async () => {
           talksWithThemButton(message.channel, user, `Hey there! Your message "${text}" has been flagged. ${reason}. We're all about promoting respect and inclusivity here! Could you please take a moment to revise it? We will give you 1 minute to edit your message before it deletes. To do so, hover over your message, click the three dots, then click edit message.`);
         }, 1000);
 
-        // wait 1 minute before checking the message again
+        // Wait 1 minute before checking the message again
         setTimeout(async () => {
           try {
             const history = await app.client.conversations.history({
@@ -534,6 +536,7 @@ loadAlex().then(() => {
   }});
 });
 
+// Commands to help admins manage the bad words list and dictionary for the "Why?" button
 const helpText = `
 *Available Commands for Admins:*
 
@@ -558,7 +561,7 @@ app.message(/^!help$/i, async ({ message, client, say }) => {
     //await say("Sorry, you do not have the permissions to access this command.");
   }
 });
-
+// Show the current bad words list set by the admin
 app.message(/^!badwords$/i, async ({ message, client, say }) => {
   const userInfo = await client.users.info({ user: message.user });
 
@@ -668,7 +671,3 @@ const editWord = (word, newDefinition) => {
 };
 
 
-exports.addBadWord = addBadWord;
-exports.loadAlex = loadAlex;
-exports.loadBadWords = loadBadWords;
-exports.saveBadWords = saveBadWords;
