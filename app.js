@@ -410,7 +410,7 @@ function findBadWords(message) {
   const matches = message.match(regex);
   if (matches) {
     const matchedWords = [...new Set(matches.map(word => word.toLowerCase()))];
-    return badWords.filter(bw => matchedWords.includes(bw.word.toLowerCase()))
+    return badWords.filter(bw => matchedWords.includes(bw.word.toLowerCase()));
   }
   return [];
 }
