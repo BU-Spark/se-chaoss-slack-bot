@@ -1,6 +1,6 @@
 const { App } = require('@slack/bolt');
-
 const dotenv = require('dotenv');
+const { saveBadWords, addBadWord } = require('../app');
 dotenv.config();
 
 require('../app.js');
@@ -11,9 +11,12 @@ jest.mock('@slack/bolt', () => {
     message: jest.fn(),
     action: jest.fn(),
     start: jest.fn(),
+    addBadWord: jest.fn(),
+    saveBadWords: jest.fn(),
   };
   return { App: jest.fn(() => myApp) };
 });
+const user = { is_admin: true };
 
 describe('test', () => {
   let app = App;
@@ -89,8 +92,35 @@ describe('test', () => {
     expect(app.message).toBeCalledWith(/outreachy/i, expect.any(Function));
   });
 
+  it('test the !help prompt', async () => {
+    await app.start();
+    expect(app.message).toBeCalledWith(/^!help$/i, expect.any(Function));
+  });
+
+  it('test the !badwords prompt', async () => {
+    await app.start();
+    expect(app.message).toBeCalledWith(/^!badwords$/i, expect.any(Function));
+  });
+  
+  it('test the "Why?" button click', async () => {
+    await app.start();
+    expect(app.action).toBeCalledWith(
+      'learn_more',
+      expect.any(Function)
+    );
+  });
+
+  it('test the 2nd "Why?" button click', async () => {
+    await app.start();
+    expect(app.action).toBeCalledWith(
+      /^definition_next_/,
+      expect.any(Function)
+    );
+  });
+
+
   // it('test the general DM method', async () => {
   //   await app.start();
-  //   expect(app.message).toBeCalledWith('intro-CHAOSS', expect.any(Function));
+  //   expect(app.message).toBeCalledWith('intro-CHAOSS', expects.any(Function));
   // });
 });
