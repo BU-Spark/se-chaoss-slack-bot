@@ -22,6 +22,15 @@ podman-run:
 		-v ${PWD}:/app:z \
 		$(IMAGE_NAME)
 
+podman-debug:
+	@podman run -it --rm \
+		--name $(IMAGE_NAME)-debug \
+		-p 9229:9229 \
+		-p 3000:3000 \
+		-v ${PWD}:/app:z \
+		--entrypoint /bin/bash \
+		$(IMAGE_NAME)
+
 docker-build:
 	@docker build -t $(IMAGE_NAME) --file=$(CONTAINER_FNAME) .
 

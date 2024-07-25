@@ -2,7 +2,7 @@
 FROM fedora-minimal:latest
 
 # Install Node.js, npm, and Git
-RUN microdnf install -y nodejs npm git && \
+RUN microdnf install -y nodejs npm git procps which && \
     microdnf clean all
 
 # for vscode
