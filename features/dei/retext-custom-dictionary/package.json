@@ -1,0 +1,39 @@
+{
+	"name": "retext-custom-dictionary",
+	"version": "1.0.0",
+	"description": "add your own words and reasons",
+	"main": "index.js",
+	"scripts": {
+		"pretest": "npm run lint",
+		"test": "tape test.js",
+		"lint": "xo",
+		"bundle": "browserify index.js --bare -s retextCustomDictionary > retext-custom-dictionary.js",
+		"minify": "uglifyjs retext-assuming.js --compress --mangle --output retext-assuming.min.js",
+		"build": "npm run bundle && npm run minify"
+	},
+	"keywords": [
+		"retext",
+		"plugin",
+		"phrase",
+		"unhelpful",
+		"documentation",
+		"inclusive"
+	],
+	"files": [
+		"index.js",
+        "custom-dictionary.js",
+        "utils.js"
+	],
+	"dependencies": {
+		"unist-util-visit":"^5.0.0"
+	},
+	"devDependencies": {
+		"browserify": "^14.5.0",
+		"retext": "^5.0.0",
+		"tape": "^4.8.0",
+		"to-vfile": "^2.1.2",
+		"uglify-js": "^3.1.6",
+		"vfile-reporter": "^4.0.0",
+		"xo": "^0.18.2"
+	}
+}
