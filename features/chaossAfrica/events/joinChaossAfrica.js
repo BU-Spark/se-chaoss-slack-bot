@@ -1,19 +1,24 @@
-async function joinChaossAfrica(event, client, logger){
-    try{
-        if(event.channel !== "C03KC6ZERSR") {
+const dotenv = require('dotenv');
+
+async function joinChaossAfrica(event, client, logger) {
+    dotenv.config();
+    try {
+        logger.debug(__dirname + __filename + ": member_joined_channel: ", event, "\nchannel id: ", process.env.CHAOSS_AFRICA_CHANNEL_ID);
+        if (event.channel !== process.env.CHAOSS_AFRICA_CHANNEL_ID) {
             return;
         }
-       
+        logger.debug(__dirname + __filename + ": channel id check passed, sending message");
+
         return await client.chat.postMessage({
-         
-           channel: event.user,
-          blocks:  [
-            {
-                type: 'section',
-                text: {
-                    type: 'mrkdwn',
-                    text: `Welcome to all our Newcomers! The goal of CHAOSS Africa is to identify and solve challenges African Open Source Contributors face and also contribute to the larger CHAOSS group. We usually have our community meetings, once every two weeks, Thursdays at 3 PM WAT!
-                    
+
+            channel: event.user,
+            blocks: [
+                {
+                    type: 'section',
+                    text: {
+                        type: 'mrkdwn',
+                        text: `Welcome to all our Newcomers! The goal of CHAOSS Africa is to identify and solve challenges African Open Source Contributors face and also contribute to the larger CHAOSS group. We usually have our community meetings, once every two weeks, Thursdays at 3 PM WAT!
+
                     \nIn the meantime, you should check out our different focus group channels and join one of them depending on your skillset:
 
                     - <#C03LUCA2988> for community managers
@@ -24,13 +29,13 @@ async function joinChaossAfrica(event, client, logger){
 
                     \nIf you have any questions, you can ask <@U0174P1MDAP> or on the channel.
                     `,
+                    },
                 },
-            },
-          ],
-          text: `Welcome to CHAOSS Africa! 🎉.`,
+            ],
+            text: `Welcome to CHAOSS Africa! 🎉.`,
         });
     }
-    catch(error){
+    catch (error) {
         console.log(error);
         logger.error(error);
     }
