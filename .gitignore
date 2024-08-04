@@ -3,3 +3,11 @@ node_modules
 
 #environment
 .env
+.vscode
+
+# Ignore everything in the features directory
+# to allow separate repos to be included
+features/*
+
+# Do not ignore the chaoss feature
+!features/chaoss-slackbot

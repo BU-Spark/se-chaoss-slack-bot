@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "test": "jest"
+    "test": "jest",
+    "type": "module"
   },
   "author": "iyimide adegunloye",
   "contributors": [
@@ -15,11 +16,26 @@
   ],
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/vision": "^4.2.0",
     "@slack/bolt": "^3.11.0",
+    "alex": "^11.0.1",
     "dotenv": "^16.0.0",
-    "nodemon": "^2.0.15"
+    "i18next": "^23.12.2",
+    "i18next-fs-backend": "^2.3.1",
+    "nodemon": "^2.0.15",
+    "tesseract.js": "^5.0.5",
+    "chaoss-slackbot": "file:features/chaoss-slackbot"
   },
   "devDependencies": {
-    "jest": "^27.5.1"
+    "@babel/preset-env": "^7.24.5",
+    "babel-jest": "^29.7.0",
+    "jest": "^27.5.1",
+    "nock": "^13.5.4"
+  },
+  "jest": {
+    "transform": {
+      "\\.[jt]sx?$": "babel-jest"
+    },
+    "transformIgnorePatterns": []
   }
 }
